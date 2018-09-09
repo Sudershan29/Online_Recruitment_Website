@@ -1,0 +1,691 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 > db.stats()\
+\{\
+	"db" : "test",\
+	"collections" : 0,\
+	"views" : 0,\
+	"objects" : 0,\
+	"avgObjSize" : 0,\
+	"dataSize" : 0,\
+	"storageSize" : 0,\
+	"numExtents" : 0,\
+	"indexes" : 0,\
+	"indexSize" : 0,\
+	"fileSize" : 0,\
+	"fsUsedSize" : 0,\
+	"fsTotalSize" : 0,\
+	"ok" : 1\
+\}\
+> use project\
+switched to db project\
+> db.createuser(\
+... \{\
+... user='Sudershan',\
+... pwd="2901",\
+... roles:["readWrite","dbadmin"]\});\
+2018-09-09T10:54:46.679+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):3:4\
+> db.createuser( \{ user="Sudershan", pwd:"2901", roles:["readWrite","dbadmin"]\});\
+2018-09-09T10:55:22.824+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):1:21\
+> db.createuser( \{ user:"Sudershan", pwd:"2901", roles:["readWrite","dbadmin"]\});\
+2018-09-09T10:55:45.578+0530 E QUERY    [js] TypeError: db.createuser is not a function :\
+@(shell):1:1\
+> db.createUser( \{ user:"Sudershan", pwd:"2901", roles:["readWrite","dbadmin"]\});\
+2018-09-09T10:58:45.530+0530 E QUERY    [js] Error: couldn't add user: No role named dbadmin@project :\
+_getErrorWithCode@src/mongo/shell/utils.js:25:13\
+DB.prototype.createUser@src/mongo/shell/db.js:1491:15\
+@(shell):1:1\
+> clear\
+2018-09-09T10:59:20.895+0530 E QUERY    [js] ReferenceError: clear is not defined :\
+@(shell):1:1\
+> show\
+2018-09-09T10:59:26.266+0530 E QUERY    [js] Error: don't know how to show [] :\
+shellHelper.show@src/mongo/shell/utils.js:1055:11\
+shellHelper@src/mongo/shell/utils.js:766:15\
+@(shellhelp2):1:1\
+> db\
+project\
+> db.createUser(\{user:"Sudershan",pwd:"2901",roles:["readWrite","dbAdmin"]\});\
+Successfully added user: \{ "user" : "Sudershan", "roles" : [ "readWrite", "dbAdmin" ] \}\
+> db.createCollection('admin');\
+\{ "ok" : 1 \}\
+> db.admin.insert(\
+... \{\
+... user_name="Ramesh_Raj",\
+... password="Abhishek291",\
+... login_time="8:09"\
+... logout_time="9:27"\});\
+2018-09-09T11:13:03.626+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):3:9\
+> db.admin.insert( \{ user_name:"Ramesh_Raj", password:"Abhishek291", login_time:"8:09" logout_time:"9:27"\});\
+2018-09-09T11:13:30.928+0530 E QUERY    [js] SyntaxError: missing \} after property list @(shell):1:85\
+> db.admin.insert( \{ user_name:"Ramesh_Raj", password:"Abhishek291", login_time:"8:09",logout_time:"9:27"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.admin.find()\
+\{ "_id" : ObjectId("5b94c4a13d4d63901e4e9960"), "user_name" : "Ramesh_Raj", "password" : "Abhishek291", "login_time" : "8:09", "logout_time" : "9:27" \}\
+> db.admin.find().pretty()\
+\{\
+	"_id" : ObjectId("5b94c4a13d4d63901e4e9960"),\
+	"user_name" : "Ramesh_Raj",\
+	"password" : "Abhishek291",\
+	"login_time" : "8:09",\
+	"logout_time" : "9:27"\
+\}\
+> db.admin.insert\
+function (obj, options) \{\
+    if (!obj)\
+        throw Error("no object passed to insert!");\
+\
+    var flags = 0;\
+\
+    var wc = undefined;\
+    var allowDottedFields = false;\
+    if (options === undefined) \{\
+        // do nothing\
+    \} else if (typeof(options) == 'object') \{\
+        if (options.ordered === undefined) \{\
+            // do nothing, like above\
+        \} else \{\
+            flags = options.ordered ? 0 : 1;\
+        \}\
+\
+        if (options.writeConcern)\
+            wc = options.writeConcern;\
+        if (options.allowdotted)\
+            allowDottedFields = true;\
+    \} else \{\
+        flags = options;\
+    \}\
+\
+    // 1 = continueOnError, which is synonymous with unordered in the write commands/bulk-api\
+    var ordered = ((flags & 1) == 0);\
+\
+    if (!wc)\
+        wc = this.getWriteConcern();\
+\
+    var result = undefined;\
+    var startTime =\
+        (typeof(_verboseShell) === 'undefined' || !_verboseShell) ? 0 : new Date().getTime();\
+\
+    if (this.getMongo().writeMode() != "legacy") \{\
+        // Bit 1 of option flag is continueOnError. Bit 0 (stop on error) is the default.\
+        var bulk = ordered ? this.initializeOrderedBulkOp() : this.initializeUnorderedBulkOp();\
+        var isMultiInsert = Array.isArray(obj);\
+\
+        if (isMultiInsert) \{\
+            obj.forEach(function(doc) \{\
+                bulk.insert(doc);\
+            \});\
+        \} else \{\
+            bulk.insert(obj);\
+        \}\
+\
+        try \{\
+            result = bulk.execute(wc);\
+            if (!isMultiInsert)\
+                result = result.toSingleResult();\
+        \} catch (ex) \{\
+            if (ex instanceof BulkWriteError) \{\
+                result = isMultiInsert ? ex.toResult() : ex.toSingleResult();\
+            \} else if (ex instanceof WriteCommandError) \{\
+                result = ex;\
+            \} else \{\
+                // Other exceptions rethrown as-is.\
+                throw ex;\
+            \}\
+        \}\
+    \} else \{\
+        if (typeof(obj._id) == "undefined" && !Array.isArray(obj)) \{\
+            var tmp = obj;  // don't want to modify input\
+            obj = \{_id: new ObjectId()\};\
+            for (var key in tmp) \{\
+                obj[key] = tmp[key];\
+            \}\
+        \}\
+\
+        this.getMongo().insert(this._fullName, obj, flags);\
+\
+        // enforce write concern, if required\
+        if (wc)\
+            result = this.runCommand("getLastError", wc instanceof WriteConcern ? wc.toJSON() : wc);\
+    \}\
+\
+    this._lastID = obj._id;\
+    this._printExtraInfo("Inserted", startTime);\
+    return result;\
+\}\
+> db.admin.insert(\
+... \{\
+...  user_name="Sudershan2901","\
+2018-09-09T12:36:59.319+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):3:10\
+> \});\
+2018-09-09T12:37:07.140+0530 E QUERY    [js] SyntaxError: expected expression, got '\}' @(shell):1:0\
+> db.admin.insert( \{  user_name="Sudershan2901",\
+... \});\
+2018-09-09T12:37:22.177+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):1:29\
+> db.admin.insert( \{  user_name:"Sudershan2901",password:"Vaish0811",login_time:"19:11",logout_time:"19:57" \});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.admin.find().forEach(printjson)\
+\{\
+	"_id" : ObjectId("5b94c4a13d4d63901e4e9960"),\
+	"user_name" : "Ramesh_Raj",\
+	"password" : "Abhishek291",\
+	"login_time" : "8:09",\
+	"logout_time" : "9:27"\
+\}\
+\{\
+	"_id" : ObjectId("5b94c6e73d4d63901e4e9961"),\
+	"user_name" : "Sudershan2901",\
+	"password" : "Vaish0811",\
+	"login_time" : "19:11",\
+	"logout_time" : "19:57"\
+\}\
+> db.admin.insert( \{  user_name:"AjayKumar",password:"Sanj1234",login_time:"21:21",logout_time:"22:35" \});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.admin.insert( \{  user_name:"NjanSid",password:"GerryKuttan",login_time:"1:21",logout_time:"4:35" \});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.admin.find().forEach(printjson)\
+\{\
+	"_id" : ObjectId("5b94c4a13d4d63901e4e9960"),\
+	"user_name" : "Ramesh_Raj",\
+	"password" : "Abhishek291",\
+	"login_time" : "8:09",\
+	"logout_time" : "9:27"\
+\}\
+\{\
+	"_id" : ObjectId("5b94c6e73d4d63901e4e9961"),\
+	"user_name" : "Sudershan2901",\
+	"password" : "Vaish0811",\
+	"login_time" : "19:11",\
+	"logout_time" : "19:57"\
+\}\
+\{\
+	"_id" : ObjectId("5b94c79f3d4d63901e4e9962"),\
+	"user_name" : "AjayKumar",\
+	"password" : "Sanj1234",\
+	"login_time" : "21:21",\
+	"logout_time" : "22:35"\
+\}\
+\{\
+	"_id" : ObjectId("5b94c7c73d4d63901e4e9963"),\
+	"user_name" : "NjanSid",\
+	"password" : "GerryKuttan",\
+	"login_time" : "1:21",\
+	"logout_time" : "4:35"\
+\}\
+> db.company.insert(\
+... \{\
+... comp_id:"G00GlE",\
+... comp_name:"Google Inc",\
+... information:"Great place for Tech FrEaKs",\
+... key_person:"Sundar Pichai",\
+... Username:"NjanSid"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.company.insert(\
+... \{\
+... comp_id:"FaCeBooK",\
+... comp_name:"FaceBook",\
+... information:"Be the one who connects people",\
+... key_person:"Mark",\
+... Username:"AjayKumar"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.company.insert( \{ comp_id:"Amaze-ON", comp_name:"Amazon", information:"Let everyday be DAY 1", key_person:"Jeff", Username:"Sudershan2901"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.company.find().forEach(printjson);\
+\{\
+	"_id" : ObjectId("5b94cb853d4d63901e4e9964"),\
+	"comp_id" : "G00GlE",\
+	"comp_name" : "Google Inc",\
+	"information" : "Great place for Tech FrEaKs",\
+	"key_person" : "Sundar Pichai",\
+	"Username" : "NjanSid"\
+\}\
+\{\
+	"_id" : ObjectId("5b94cc5b3d4d63901e4e9965"),\
+	"comp_id" : "FaCeBooK",\
+	"comp_name" : "FaceBook",\
+	"information" : "Be the one who connects people",\
+	"key_person" : "Mark",\
+	"Username" : "AjayKumar"\
+\}\
+\{\
+	"_id" : ObjectId("5b94ccd03d4d63901e4e9966"),\
+	"comp_id" : "Amaze-ON",\
+	"comp_name" : "Amazon",\
+	"information" : "Let everyday be DAY 1",\
+	"key_person" : "Jeff",\
+	"Username" : "Sudershan2901"\
+\}\
+> db.jobseeker.insert(\
+... \{\
+... can_id="EMP0012",\
+... \});\
+2018-09-09T14:20:12.111+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):3:6\
+> db.jobseeker.insert( \{ can_id:"EMP0012",can_name:"Ramesh Raj",resume:"Ex-Manager at Apple",offer_id=NULL,Username:"Ramesh_Raj" \});\
+2018-09-09T14:22:08.356+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):1:99\
+> db.jobseeker.insert( \{ can_id:"EMP0012",can_name:"Ramesh Raj",resume:"Ex-Manager at Apple",offer_id:NULL,Username:"Ramesh_Raj" \});\
+2018-09-09T14:22:19.528+0530 E QUERY    [js] ReferenceError: NULL is not defined :\
+@(shell):1:92\
+> db.jobseeker.insert( \{ can_id:"EMP0012",can_name:"Ramesh Raj",resume:"Ex-Manager at Apple",offer_id:"",Username:"Ramesh_Raj" \});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.admin.insert(\{user_name:"MasterXer",password:"Crisis213",login_time:"4:04",logout_time:"5:56"\});\
+\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.admin.insert(\{user_name:"CoderXr",password:"Ronaldo213",login_time:"14:04",logout_time:"15:06"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.admin.insert(\{user_name:"Tony",password:"Pots21",login_time:"17:04",logout_time:"19:06"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.admin.insert(\{user_name:"ClarkKent",password:"Gotham21",login_time:"7:04",logout_time:"9:06"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.admin.find().forEach(printjson);\
+\{\
+	"_id" : ObjectId("5b94c4a13d4d63901e4e9960"),\
+	"user_name" : "Ramesh_Raj",\
+	"password" : "Abhishek291",\
+	"login_time" : "8:09",\
+	"logout_time" : "9:27"\
+\}\
+\{\
+	"_id" : ObjectId("5b94c6e73d4d63901e4e9961"),\
+	"user_name" : "Sudershan2901",\
+	"password" : "Vaish0811",\
+	"login_time" : "19:11",\
+	"logout_time" : "19:57"\
+\}\
+\{\
+	"_id" : ObjectId("5b94c79f3d4d63901e4e9962"),\
+	"user_name" : "AjayKumar",\
+	"password" : "Sanj1234",\
+	"login_time" : "21:21",\
+	"logout_time" : "22:35"\
+\}\
+\{\
+	"_id" : ObjectId("5b94c7c73d4d63901e4e9963"),\
+	"user_name" : "NjanSid",\
+	"password" : "GerryKuttan",\
+	"login_time" : "1:21",\
+	"logout_time" : "4:35"\
+\}\
+\{\
+	"_id" : ObjectId("5b94dfd13d4d63901e4e9968"),\
+	"user_name" : "MasterXer",\
+	"password" : "Crisis213",\
+	"login_time" : "4:04",\
+	"logout_time" : "5:56"\
+\}\
+\{\
+	"_id" : ObjectId("5b94dfec3d4d63901e4e9969"),\
+	"user_name" : "CoderXr",\
+	"password" : "Ronaldo213",\
+	"login_time" : "14:04",\
+	"logout_time" : "15:06"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e0163d4d63901e4e996a"),\
+	"user_name" : "Tony",\
+	"password" : "Pots21",\
+	"login_time" : "17:04",\
+	"logout_time" : "19:06"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e07f3d4d63901e4e996b"),\
+	"user_name" : "ClarkKent",\
+	"password" : "Gotham21",\
+	"login_time" : "7:04",\
+	"logout_time" : "9:06"\
+\}\
+> db.jobseeker.find().forEach(printjson);\
+\{\
+	"_id" : ObjectId("5b94df4a3d4d63901e4e9967"),\
+	"can_id" : "EMP0012",\
+	"can_name" : "Ramesh Raj",\
+	"resume" : "Ex-Manager at Apple",\
+	"offer_id" : "",\
+	"Username" : "Ramesh_Raj"\
+\}\
+> db.jobseeker.insert(\
+... \{\
+... can_id="EMP0017",\
+... \});\
+2018-09-09T14:29:59.404+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):3:6\
+> db.jobseeker.insert( \{ can_id:"EMP0017",can_name:"John Snow",resume:"Man of my words",offer_id:"OFF003",user_name:"MasterXr"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.jobseeker.insert( \{ can_id:"EMP0057",can_name:"Mathew Snow",resume:"10 yrs exxperience",offer_id:"OFF0051",user_name:"ClarkKent"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.jobseeker.insert( \{ can_id:"EMP0027",can_name:"Max Brener",resume:"7 1/2  yrs exxperience",offer_id:"",user_name:"Tony"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.jobseeker.find().pretty();\
+\{\
+	"_id" : ObjectId("5b94df4a3d4d63901e4e9967"),\
+	"can_id" : "EMP0012",\
+	"can_name" : "Ramesh Raj",\
+	"resume" : "Ex-Manager at Apple",\
+	"offer_id" : "",\
+	"Username" : "Ramesh_Raj"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e17e3d4d63901e4e996c"),\
+	"can_id" : "EMP0017",\
+	"can_name" : "John Snow",\
+	"resume" : "Man of my words",\
+	"offer_id" : "OFF003",\
+	"user_name" : "MasterXr"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e1ed3d4d63901e4e996d"),\
+	"can_id" : "EMP0057",\
+	"can_name" : "Mathew Snow",\
+	"resume" : "10 yrs exxperience",\
+	"offer_id" : "OFF0051",\
+	"user_name" : "ClarkKent"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e21b3d4d63901e4e996e"),\
+	"can_id" : "EMP0027",\
+	"can_name" : "Max Brener",\
+	"resume" : "7 1/2  yrs exxperience",\
+	"offer_id" : "",\
+	"user_name" : "Tony"\
+\}\
+> db.offerLetter.insert(\
+... \{\
+... offer_id:"OFF003",\
+... comp_id:"G00GLE",\
+... cand_id:"EMP007"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.offerLetter.insert(\
+... \{\
+... offer_id:"OFF0051",\
+... comp_id:"Amaze-ON",\
+... cand_id:"EMP0057"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.offerLetter.insert(\
+... \
+... \{\
+... \});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.offerLetter.find().pretty();\
+\{\
+	"_id" : ObjectId("5b94e4173d4d63901e4e996f"),\
+	"offer_id" : "OFF003",\
+	"comp_id" : "G00GLE",\
+	"cand_id" : "EMP007"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e46b3d4d63901e4e9970"),\
+	"offer_id" : "OFF0051",\
+	"comp_id" : "Amaze-ON",\
+	"cand_id" : "EMP0057"\
+\}\
+\{ "_id" : ObjectId("5b94e4883d4d63901e4e9971") \}\
+> db.experience.insert(\
+... \{\
+... exp_detail="8 yrs",\
+... exp_org="Apple",\
+... cand_id:"EMP0027"\});\
+2018-09-09T14:53:13.303+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):3:10\
+> db.experience.insert( \{ exp_detail:"8 yrs", exp_org:"Apple", cand_id:"EMP0027"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.experience.insert( \{ exp_detail:"10 yrs", exp_org:"FaceBook", cand_id:"EMP0057"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.experience.find().pretty();\
+\{\
+	"_id" : ObjectId("5b94e6903d4d63901e4e9972"),\
+	"exp_detail" : "8 yrs",\
+	"exp_org" : "Apple",\
+	"cand_id" : "EMP0027"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e6a43d4d63901e4e9973"),\
+	"exp_detail" : "10 yrs",\
+	"exp_org" : "FaceBook",\
+	"cand_id" : "EMP0057"\
+\}\
+> db.personal_info.insert(\
+... \{\
+... address:"Bakers Street",\
+... dob:"08/09/1987",\
+... fathers_name:"Raj",\
+... can_id:"EMP0012"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.personal_info.insert( \{ address:"GST Road", dob:"08/09/1994", fathers_name:"Snow", can_id:"EMP0017"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.personal_info.insert( \{ address:"Seneka Avenue ", dob:"08/09/1990", fathers_name:"Blake", can_id:"EMP0057"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.personal_info.insert( \{ address:"Mount Bakers ", dob:"11/2/1991", fathers_name:"Brener", can_id:"EMP0027"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.personal_info.find().pretty();\
+\{\
+	"_id" : ObjectId("5b94e7bf3d4d63901e4e9974"),\
+	"address" : "Bakers Street",\
+	"dob" : "08/09/1987",\
+	"fathers_name" : "Raj",\
+	"can_id" : "EMP0012"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e7ec3d4d63901e4e9975"),\
+	"address" : "GST Road",\
+	"dob" : "08/09/1994",\
+	"fathers_name" : "Snow",\
+	"can_id" : "EMP0017"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e8143d4d63901e4e9976"),\
+	"address" : "Seneka Avenue ",\
+	"dob" : "08/09/1990",\
+	"fathers_name" : "Blake",\
+	"can_id" : "EMP0057"\
+\}\
+\{\
+	"_id" : ObjectId("5b94e8453d4d63901e4e9977"),\
+	"address" : "Mount Bakers ",\
+	"dob" : "11/2/1991",\
+	"fathers_name" : "Brener",\
+	"can_id" : "EMP0027"\
+\}\
+> db.requisition.insert(\
+... \{\
+... can_id:"EMP0012",\
+... req_id:"REQ0014",\
+... package=30000,\
+... criteria:"Tech",\
+... skill_id:"SKI0013",\
+... comp_id:"Amaze-ON"\});\
+2018-09-09T19:26:46.102+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):5:7\
+> db.requisition.insert( \{ can_id:"EMP0012", req_id:"REQ0014", package:30000, criteria:"Tech", skill_id:"SKI0013", comp_id:"Amaze-ON"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.requisition.insert( \{ can_id:"EMP007", req_id:"REQ0011", package:45000, criteria:"Tech", skill_id:"SKI0053", comp_id:"G00GLE"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.requisition.insert( \{ can_id:"EMP0017", req_id:"REQ0016", package:65000, criteria:"Tech", skill_id:"SKI0023", comp_id:"FaCeBoOk"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.requisition.find().pretty();\
+\{\
+	"_id" : ObjectId("5b9526a73d4d63901e4e9978"),\
+	"can_id" : "EMP0012",\
+	"req_id" : "REQ0014",\
+	"package" : 30000,\
+	"criteria" : "Tech",\
+	"skill_id" : "SKI0013",\
+	"comp_id" : "Amaze-ON"\
+\}\
+\{\
+	"_id" : ObjectId("5b9526f93d4d63901e4e9979"),\
+	"can_id" : "EMP007",\
+	"req_id" : "REQ0011",\
+	"package" : 45000,\
+	"criteria" : "Tech",\
+	"skill_id" : "SKI0053",\
+	"comp_id" : "G00GLE"\
+\}\
+\{\
+	"_id" : ObjectId("5b9527353d4d63901e4e997a"),\
+	"can_id" : "EMP0017",\
+	"req_id" : "REQ0016",\
+	"package" : 65000,\
+	"criteria" : "Tech",\
+	"skill_id" : "SKI0023",\
+	"comp_id" : "FaCeBoOk"\
+\}\
+> db.academics.insert(\
+... \{\
+... highschool:"SSM",\
+... secondary:"SSM",\
+... percentage:98\
+... skill_id:"SKI0013"\});\
+2018-09-09T19:34:15.565+0530 E QUERY    [js] SyntaxError: missing \} after property list @(shell):6:0\
+> db.academics.insert( \{ highschool:"SSM", secondary:"SSM", percentage:98,skill_id:"SKI0013"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.academics.insert( \{ highschool:"SSM", secondary:"SSM", percentage:79 ,skill_id:"SKI0023"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.academics.insert( \{ highschool:"SSM", secondary:"SSM", percentage:95 ,skill_id:"SKI0053"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.academics.find().pretty();\
+\{\
+	"_id" : ObjectId("5b9528673d4d63901e4e997b"),\
+	"highschool" : "SSM",\
+	"secondary" : "SSM",\
+	"percentage" : 98,\
+	"skill_id" : "SKI0013"\
+\}\
+\{\
+	"_id" : ObjectId("5b9528773d4d63901e4e997c"),\
+	"highschool" : "SSM",\
+	"secondary" : "SSM",\
+	"percentage" : 79,\
+	"skill_id" : "SKI0023"\
+\}\
+\{\
+	"_id" : ObjectId("5b9528843d4d63901e4e997d"),\
+	"highschool" : "SSM",\
+	"secondary" : "SSM",\
+	"percentage" : 95,\
+	"skill_id" : "SKI0053"\
+\}\
+> db.skill.insert(\
+... \{\
+... skill_id:"SKI0053",\
+... co-curricular:"Language Skill",\
+... technical:"C++"\});\
+2018-09-09T19:38:29.390+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):4:2\
+> db.skill.insert( \{ skill_id:"SKI0053", co_curricular:"Language Skill", technical:"C++"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.skill.insert( \{ skill_id:"SKI0023", co_curricular:"Language Skill", technical:"C"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.skill.insert( \{ skill_id:"SKI0013", co_curricular:"Language Skill", technical:"Java"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.skill.find().pretty();\
+\{\
+	"_id" : ObjectId("5b95297e3d4d63901e4e997e"),\
+	"skill_id" : "SKI0053",\
+	"co_curricular" : "Language Skill",\
+	"technical" : "C++"\
+\}\
+\{\
+	"_id" : ObjectId("5b9529913d4d63901e4e997f"),\
+	"skill_id" : "SKI0023",\
+	"co_curricular" : "Language Skill",\
+	"technical" : "C"\
+\}\
+\{\
+	"_id" : ObjectId("5b95299b3d4d63901e4e9980"),\
+	"skill_id" : "SKI0013",\
+	"co_curricular" : "Language Skill",\
+	"technical" : "Java"\
+\}\
+> db.interview.insert(\
+... \{\
+... int_id:"INT00012",\
+... remarks:7,\
+... req_id:"REQ0014",\
+... int_id_type:"ITT02",\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.interview.insert( \{ int_id:"INT00012", remarks:7, req_id:"REQ0014", int_id_type:"ITT02",comp_id="G00GLE"\});\
+2018-09-09T19:45:42.425+0530 E QUERY    [js] SyntaxError: missing : after property id @(shell):1:98\
+> db.interview.insert( \{ int_id:"INT00012", remarks:7, req_id:"REQ0014", int_id_type:"ITT02",comp_id:"G00GLE"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.interview.insert( \{ int_id:"INT00022", remarks:7, req_id:"REQ0014", int_id_type:"ITT05",comp_id:"G00GLE"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.interview.insert( \{ int_id:"INT00014", remarks:7, req_id:"REQ0004", int_id_type:"ITT02",comp_id:"FaCeBoOk"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.interview.find().pretty();\
+\{\
+	"_id" : ObjectId("5b952ae83d4d63901e4e9981"),\
+	"int_id" : "INT00012",\
+	"remarks" : 7,\
+	"req_id" : "REQ0014",\
+	"int_id_type" : "ITT02"\
+\}\
+\{\
+	"_id" : ObjectId("5b952b133d4d63901e4e9982"),\
+	"int_id" : "INT00012",\
+	"remarks" : 7,\
+	"req_id" : "REQ0014",\
+	"int_id_type" : "ITT02",\
+	"comp_id" : "G00GLE"\
+\}\
+\{\
+	"_id" : ObjectId("5b952b553d4d63901e4e9983"),\
+	"int_id" : "INT00022",\
+	"remarks" : 7,\
+	"req_id" : "REQ0014",\
+	"int_id_type" : "ITT05",\
+	"comp_id" : "G00GLE"\
+\}\
+\{\
+	"_id" : ObjectId("5b952b803d4d63901e4e9984"),\
+	"int_id" : "INT00014",\
+	"remarks" : 7,\
+	"req_id" : "REQ0004",\
+	"int_id_type" : "ITT02",\
+	"comp_id" : "FaCeBoOk"\
+\}\
+> db.interviewtype.insert\{\
+... (\
+... )\}\
+2018-09-09T19:49:55.822+0530 E QUERY    [js] SyntaxError: missing ; before statement @(shell):1:23\
+> db.interviewtype.insert(\
+... \{\
+... int_id_type:"ITT05",\
+... int_type_name:"Speaking"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.interviewtype.insert( \{ int_id_type:"ITT02", int_type_name:"Skype"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.interviewtype.insert( \{ int_id_type:"ITT07", int_type_name:"Real"\});\
+WriteResult(\{ "nInserted" : 1 \})\
+> db.interview.find().pretty();\
+\{\
+	"_id" : ObjectId("5b952ae83d4d63901e4e9981"),\
+	"int_id" : "INT00012",\
+	"remarks" : 7,\
+	"req_id" : "REQ0014",\
+	"int_id_type" : "ITT02"\
+\}\
+\{\
+	"_id" : ObjectId("5b952b133d4d63901e4e9982"),\
+	"int_id" : "INT00012",\
+	"remarks" : 7,\
+	"req_id" : "REQ0014",\
+	"int_id_type" : "ITT02",\
+	"comp_id" : "G00GLE"\
+\}\
+\{\
+	"_id" : ObjectId("5b952b553d4d63901e4e9983"),\
+	"int_id" : "INT00022",\
+	"remarks" : 7,\
+	"req_id" : "REQ0014",\
+	"int_id_type" : "ITT05",\
+	"comp_id" : "G00GLE"\
+\}\
+\{\
+	"_id" : ObjectId("5b952b803d4d63901e4e9984"),\
+	"int_id" : "INT00014",\
+	"remarks" : 7,\
+	"req_id" : "REQ0004",\
+	"int_id_type" : "ITT02",\
+	"comp_id" : "FaCeBoOk"\
+\}\
+}
